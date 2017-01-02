@@ -30,8 +30,9 @@ document.addEventListener('DOMContentLoaded', function () {
         imageData.data[index + 3] = a;
     }
 
+    var seed = 0x42;
 
-    var noise = new MapGen(0x42, 4);
+    var noise = new MapGen(seed, 4);
 
     var canvas = document.getElementById("canvas"),
         ctx = canvas.getContext("2d");
@@ -49,6 +50,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var imgData = ctx.createImageData(width, height);
 
+    document.getElementById('newseed').onclick = function() {
+        seed = Math.random()*65536*2*2*2;
+        noise = new MapGen(seed, 4);
+        update();
+    }
 
     document.getElementById('plus').onclick = function () {
         zoom *= 2;
