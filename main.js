@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
     var QueryString = function () {
-        // This function is anonymous, is executed immediately and
-        // the return value is assigned to QueryString!
         var query_string = {};
         var query = window.location.search.substring(1);
         var vars = query.split("&");
@@ -50,15 +48,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var imgData = ctx.createImageData(width, height);
 
-    document.getElementById('newseed').onclick = function() {
-        seed = Math.random()*65536*2*2*2;
+    document.getElementById('newseed').onclick = function () {
+        seed = Math.random() * 65536 * 2 * 2 * 2;
         noise = new MapGen(seed, 4);
         update();
-    }
+    };
 
     document.getElementById('plus').onclick = function () {
         zoom *= 2;
-        document.getElementById('zoomlevel').innerHTML = 'x'+zoom;
+        document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
         offsetH *= 2;
         offsetW *= 2;
         update();
@@ -66,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('minus').onclick = function () {
         zoom /= 2;
-        document.getElementById('zoomlevel').innerHTML = 'x'+zoom;
+        document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
         offsetH /= 2;
         offsetW /= 2;
         update();
@@ -99,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function update() {
         for (var i = 0; i < width; i++) {
             for (var j = 0; j < height; j++) {
-                var h = noise.getHeight((i + (offsetW-width/2)) / zoom, (j + (offsetH-height/2)) / zoom);
+                var h = noise.getHeight((i + (offsetW - width / 2)) / zoom, (j + (offsetH - height / 2)) / zoom);
                 if (h < 0.4) {
                     var color = {r: 84, g: 132, b: 219};
                 } else if (h < 0.405) {

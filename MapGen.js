@@ -15,11 +15,7 @@ var MapGen = (function () {
     MapGen.prototype.getHeight = function (x, y) {
         return ((this.noiseGenerator.perlinNoise3D((x) / 100, (y) / 100, this.time) + 1) / 2) * ((this.noiseGenerator.perlinNoise3D((x) / 1000, (y) / 1000, this.time) + 1) / 2);
     };
-    /**
-     * Get the value of seed
-     *
-     * @return the value of seed
-     */
+
     MapGen.prototype.getSeed = function () {
         return this.seed;
     };
