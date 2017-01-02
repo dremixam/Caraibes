@@ -45,18 +45,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var zoom = QueryString.z | 1;
     var offsetW = QueryString.x | -(width / 2);
-    var offsetH = QueryString.y | -(height / 2) - 400;
+    var offsetH = QueryString.y | -(height / 2);
 
     var imgData = ctx.createImageData(width, height);
 
 
     document.getElementById('plus').onclick = function () {
         zoom *= 2;
+        document.getElementById('zoomlevel').innerHTML = 'x'+zoom;
+        offsetH *= 2;
+        offsetW *= 2;
         update();
     };
 
     document.getElementById('minus').onclick = function () {
         zoom /= 2;
+        document.getElementById('zoomlevel').innerHTML = 'x'+zoom;
+        offsetH /= 2;
+        offsetW /= 2;
         update();
     };
 
@@ -87,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function update() {
         for (var i = 0; i < width; i++) {
             for (var j = 0; j < height; j++) {
-                var h = noise.getHeight((i + offsetW) / zoom, (j + offsetH) / zoom);
+                var h = noise.getHeight((i + (offsetW-width/2)) / zoom, (j + (offsetH-height/2)) / zoom);
                 if (h < 0.4) {
                     var color = {r: 84, g: 132, b: 219};
                 } else if (h < 0.405) {
