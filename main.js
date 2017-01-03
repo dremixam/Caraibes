@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     var zoom = QueryString.z | 1;
-    var offsetW = QueryString.x | -(width / 2);
-    var offsetH = QueryString.y | -(height / 2);
+    var offsetW = QueryString.x | 0;
+    var offsetH = QueryString.y | 0;
 
     var imgData = ctx.createImageData(width, height);
 
@@ -100,7 +100,9 @@ document.addEventListener('DOMContentLoaded', function () {
         for (var i = 0; i < width; i++) {
             for (var j = 0; j < height; j++) {
                 var h = noise.getHeight((i + (offsetW-width/2)) / zoom, (j + (offsetH-height/2)) / zoom);
-                if (h < 0.4) {
+                if (Math.ceil((i + (offsetW-width/2)) / zoom) == 0 || Math.ceil((j + (offsetH-height/2)) / zoom) == 0) {
+                    var color = {r: 255, g: 0, b: 0};
+                } else if (h < 0.4) {
                     var color = {r: 84, g: 132, b: 219};
                 } else if (h < 0.405) {
                     var color = {r: 224, g: 222, b: 116};
