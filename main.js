@@ -1,7 +1,28 @@
 document.addEventListener('DOMContentLoaded', function () {
+    function insertParam(key, value) {
+        key = encodeURI(key); value = encodeURI(value);
+
+        var kvp = document.location.search.substr(1).split('&');
+
+        var i=kvp.length; var x; while(i--) 
+        {
+            x = kvp[i].split('=');
+
+            if (x[0]==key)
+            {
+                x[1] = value;
+                kvp[i] = x.join('=');
+                break;
+            }
+        }
+
+        if(i<0) {kvp[kvp.length] = [key,value].join('=');}
+
+        //this will reload the page, it's likely better to store this until finished
+        document.location.search = kvp.join('&'); 
+    }
+    
     var QueryString = function () {
-        // This function is anonymous, is executed immediately and
-        // the return value is assigned to QueryString!
         var query_string = {};
         var query = window.location.search.substring(1);
         var vars = query.split("&");
@@ -50,15 +71,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var imgData = ctx.createImageData(width, height);
 
-    document.getElementById('newseed').onclick = function() {
-        seed = Math.random()*65536*2*2*2;
+    document.getElementById('newseed').onclick = function () {
+        seed = Math.random() * 65536 * 2 * 2 * 2;
         noise = new MapGen(seed, 4);
         update();
-    }
+    };
 
     document.getElementById('plus').onclick = function () {
         zoom *= 2;
-        document.getElementById('zoomlevel').innerHTML = 'x'+zoom;
+        document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
         offsetH *= 2;
         offsetW *= 2;
         update();
@@ -66,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('minus').onclick = function () {
         zoom /= 2;
-        document.getElementById('zoomlevel').innerHTML = 'x'+zoom;
+        document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
         offsetH /= 2;
         offsetW /= 2;
         update();
