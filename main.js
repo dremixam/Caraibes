@@ -1,25 +1,31 @@
 document.addEventListener('DOMContentLoaded', function () {
+
     function insertParam(key, value) {
         key = encodeURI(key); value = encodeURI(value);
 
         var kvp = document.location.search.substr(1).split('&');
 
-        var i=kvp.length; var x; while(i--) 
-        {
+        if ( kvp[0] === '' ) kvp = [];
+
+        for(var i=0; i < kvp.length; i++) {
             x = kvp[i].split('=');
 
-            if (x[0]==key)
-            {
+            if (x[0]==key) {
                 x[1] = value;
                 kvp[i] = x.join('=');
                 break;
             }
         }
 
-        if(i<0) {kvp[kvp.length] = [key,value].join('=');}
+        if(i===kvp.length) {kvp[kvp.length] = [key,value].join('=');}
 
-        //this will reload the page, it's likely better to store this until finished
-        document.location.search = kvp.join('&'); 
+        if (history.pushState) {
+            var newurl = window.location.protocol 
+                + '//' 
+                + window.location.host + window.location.pathname + '?' + kvp.join('&');
+
+            window.history.pushState({path:newurl},'',newurl);
+        }
     }
     
     var QueryString = function () {
@@ -51,7 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
         imageData.data[index + 3] = a;
     }
 
-    var seed = 0x42;
+    var seed = parseInt(QueryString.seed);
+
+    if(isNaN(seed)) seed = 0x42;
 
     var noise = new MapGen(seed, 4);
 
@@ -64,64 +72,70 @@ document.addEventListener('DOMContentLoaded', function () {
     var width = canvas.width;
     var height = canvas.height;
 
+    var zoom = parseFloat(QueryString.z);
+    if (isNaN(zoom)) zoom = 1;
 
-    var zoom = QueryString.z | 1;
+    document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
+
     var offsetW = QueryString.x | 0;
     var offsetH = QueryString.y | 0;
 
     var imgData = ctx.createImageData(width, height);
 
     document.getElementById('newseed').onclick = function () {
-        seed = Math.random() * 65536 * 2 * 2 * 2;
+        seed = parseInt(Math.ceil(Math.random() * Number.MAX_SAFE_INTEGER));
+        insertParam('seed', seed);
         noise = new MapGen(seed, 4);
         update();
     };
 
     document.getElementById('plus').onclick = function () {
         zoom *= 2;
+        insertParam('z', zoom);
         document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
-        offsetH *= 2;
-        offsetW *= 2;
         update();
     };
 
     document.getElementById('minus').onclick = function () {
         zoom /= 2;
+        insertParam('z', zoom);
         document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
-        offsetH /= 2;
-        offsetW /= 2;
         update();
     };
 
 
     document.getElementById('up').onclick = function () {
-        offsetH -= 100;
+        offsetH -= 100/zoom;
+        insertParam('y', offsetH);
         update();
     };
 
 
     document.getElementById('down').onclick = function () {
-        offsetH += 100;
+        offsetH += 100/zoom;
+        insertParam('y', offsetH);
         update();
     };
 
 
     document.getElementById('left').onclick = function () {
-        offsetW -= 100;
+        offsetW -= 100/zoom;
+        insertParam('x', offsetW);
         update();
     };
 
 
     document.getElementById('right').onclick = function () {
-        offsetW += 100;
+        offsetW += 100/zoom;
+        insertParam('x', offsetW);
         update();
     };
 
     function update() {
         for (var i = 0; i < width; i++) {
             for (var j = 0; j < height; j++) {
-                var h = noise.getHeight((i + (offsetW-width/2)) / zoom, (j + (offsetH-height/2)) / zoom);
-                if (Math.ceil((i + (offsetW-width/2)) / zoom) == 0 || Math.ceil((j + (offsetH-height/2)) / zoom) == 0) {
+                var h = noise.getHeight(Math.ceil((i + (offsetW*zoom-width/2)) / zoom), Math.ceil((j + (offsetH*zoom-height/2)) / zoom));
+                if (Math.ceil((i + (offsetW*zoom-width/2)) / zoom) == 0 || Math.ceil((j + (offsetH*zoom-height/2)) / zoom) == 0) {
                     var color = {r: 255, g: 0, b: 0};
                 } else if (h < 0.4) {
                     var color = {r: 84, g: 132, b: 219};
