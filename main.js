@@ -84,51 +84,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('newseed').onclick = function () {
         seed = parseInt(Math.ceil(Math.random() * Number.MAX_SAFE_INTEGER));
-        insertParam('seed', seed);
         noise = new MapGen(seed, 4);
         update();
+        insertParam('seed', seed);
     };
 
     document.getElementById('plus').onclick = function () {
         zoom *= 2;
+        update();
         insertParam('z', zoom);
         document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
-        update();
     };
 
     document.getElementById('minus').onclick = function () {
         zoom /= 2;
+        update();
         insertParam('z', zoom);
         document.getElementById('zoomlevel').innerHTML = 'x' + zoom;
-        update();
     };
 
 
     document.getElementById('up').onclick = function () {
         offsetH -= 100/zoom;
-        insertParam('y', offsetH);
         update();
+        insertParam('y', offsetH);
     };
 
 
     document.getElementById('down').onclick = function () {
         offsetH += 100/zoom;
-        insertParam('y', offsetH);
         update();
+        insertParam('y', offsetH);
     };
 
 
     document.getElementById('left').onclick = function () {
         offsetW -= 100/zoom;
-        insertParam('x', offsetW);
         update();
+        insertParam('x', offsetW);
     };
 
 
     document.getElementById('right').onclick = function () {
         offsetW += 100/zoom;
-        insertParam('x', offsetW);
         update();
+        insertParam('x', offsetW);
     };
 
     function update() {
