@@ -1,33 +1,36 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     function insertParam(key, value) {
-        key = encodeURI(key); value = encodeURI(value);
+        key = encodeURI(key);
+        value = encodeURI(value);
 
         var kvp = document.location.search.substr(1).split('&');
 
-        if ( kvp[0] === '' ) kvp = [];
+        if (kvp[0] === '') kvp = [];
 
-        for(var i=0; i < kvp.length; i++) {
+        for (var i = 0; i < kvp.length; i++) {
             x = kvp[i].split('=');
 
-            if (x[0]==key) {
+            if (x[0] == key) {
                 x[1] = value;
                 kvp[i] = x.join('=');
                 break;
             }
         }
 
-        if(i===kvp.length) {kvp[kvp.length] = [key,value].join('=');}
+        if (i === kvp.length) {
+            kvp[kvp.length] = [key, value].join('=');
+        }
 
         if (history.pushState) {
-            var newurl = window.location.protocol 
-                + '//' 
+            var newurl = window.location.protocol
+                + '//'
                 + window.location.host + window.location.pathname + '?' + kvp.join('&');
 
-            window.history.pushState({path:newurl},'',newurl);
+            window.history.pushState({path: newurl}, '', newurl);
         }
     }
-    
+
     var QueryString = function () {
         var query_string = {};
         var query = window.location.search.substring(1);
@@ -59,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var seed = parseInt(QueryString.seed);
 
-    if(isNaN(seed)) seed = 0x42;
+    if (isNaN(seed)) seed = 0x42;
 
     var noise = new MapGen(seed, 4);
 
@@ -105,55 +108,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.getElementById('up').onclick = function () {
-        offsetH -= 100/zoom;
+        offsetH -= 100 / zoom;
         update();
         insertParam('y', offsetH);
     };
 
 
     document.getElementById('down').onclick = function () {
-        offsetH += 100/zoom;
+        offsetH += 100 / zoom;
         update();
         insertParam('y', offsetH);
     };
 
 
     document.getElementById('left').onclick = function () {
-        offsetW -= 100/zoom;
+        offsetW -= 100 / zoom;
         update();
         insertParam('x', offsetW);
     };
 
 
     document.getElementById('right').onclick = function () {
-        offsetW += 100/zoom;
+        offsetW += 100 / zoom;
         update();
         insertParam('x', offsetW);
     };
 
     function update() {
+        var hm1;
         for (var i = 0; i < width; i++) {
+            hm1 = 0.4;
             for (var j = 0; j < height; j++) {
-                var h = noise.getHeight(Math.ceil((i + (offsetW*zoom-width/2)) / zoom), Math.ceil((j + (offsetH*zoom-height/2)) / zoom));
-                if (Math.ceil((i + (offsetW*zoom-width/2)) / zoom) == 0 || Math.ceil((j + (offsetH*zoom-height/2)) / zoom) == 0) {
-                    var color = {r: 255, g: 0, b: 0};
-                } else if (h < 0.4) {
-                    var color = {r: 84, g: 132, b: 219};
-                } else if (h < 0.405) {
-                    var color = {r: 224, g: 222, b: 116};
-                } else if (h < 0.7) {
-                    var r = (((h - 0.405) / 0.7 * (-44)) + 44);
-                    var g = (((h - 0.405) / 0.7 * (-176)) + 176);
-                    var b = (((h - 0.405) / 0.7 * (-40)) + 40);
+                var h = (noise.getHeight(Math.ceil((i + (offsetW * zoom - width / 2)) / zoom), Math.ceil((j + (offsetH * zoom - height / 2)) / zoom))) - 0.4;
 
-                    var color = {r: r, g: g, b: b};
+                var pente = 100 * (h - hm1) * zoom;
+
+                var color;
+
+                if (pente < -1) pente = -1;
+                if (pente > 1) pente = 1;
+
+
+                if (h < 0) {
+                    // eau
+
+
+                    var profondeur = -(20 * h);
+                    if (profondeur > 1) {
+                        color = {r: 84, g: 132, b: 219};
+                    } else {
+                        profondeur /= 2;
+                        var sable = brightness({r: 224, g: 222, b: 116}, 1 + pente);
+                        var eau = {r: 84, g: 132, b: 219};
+
+                        color.r = (sable.r * (0.5 - profondeur) + eau.r * (profondeur + 0.5));
+                        color.g = (sable.g * (0.5 - profondeur) + eau.g * (profondeur + 0.5));
+                        color.b = (sable.b * (0.5 - profondeur) + eau.b * (profondeur + 0.5));
+
+                    }
+
+                } else if (h < 0.005) {
+                    color = brightness({r: 224, g: 222, b: 116}, 1 + pente);
+                } else if (h < 0.3) {
+                    color = brightness({r: 44, g: 176, b: 40}, 1 + pente);
 
 
                 } else {
-                    var color = {r: 255, g: 255, b: 255};
+                    color = brightness({r: 255, g: 255, b: 255}, 1 + pente);
                 }
 
+
                 setPixel(imgData, i, j, color.r, color.g, color.b, 255);
+
+                hm1 = h;
             }
         }
         ctx.putImageData(imgData, 0, 0);
@@ -163,3 +190,69 @@ document.addEventListener('DOMContentLoaded', function () {
 
 }, false);
 
+function brightness(color, change) {
+    var hsl = rgbToHsl(color.r, color.g, color.b);
+    hsl.l *= change;
+    if (hsl.l > 1) hsl.l = 1;
+    if (hsl.l < 0) hsl.l = 0;
+    return hslToRgb(hsl);
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if (max == min) {
+        h = s = 0; // achromatic
+    } else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / d + 2;
+                break;
+            case b:
+                h = (r - g) / d + 4;
+                break;
+        }
+        h /= 6;
+    }
+
+    return {h: h, s: s, l: l};
+}
+
+function hslToRgb(hsl) {
+    var r, g, b;
+
+    var h = hsl.h;
+    var s = hsl.s;
+    var l = hsl.l;
+
+
+    if (s == 0) {
+        r = g = b = l; // achromatic
+    } else {
+        function hue2rgb(p, q, t) {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+        }
+
+        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        var p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+    }
+
+    return {r: r * 255, g: g * 255, b: b * 255};
+}
